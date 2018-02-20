@@ -6,41 +6,77 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import com.techelevator.projects.model.Department;
 import com.techelevator.projects.model.DepartmentDAO;
 
 public class JDBCDepartmentDAO implements DepartmentDAO {
-	
+
 	private JdbcTemplate jdbcTemplate;
 
 	public JDBCDepartmentDAO(DataSource dataSource) {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
+
 	}
 
-	@Override
+	@Override // done?
 	public List<Department> getAllDepartments() {
-		return new ArrayList<>();
+		ArrayList<Department> departments = new ArrayList<>();
+		String sqlfindAllDepartments = "SELECT department_id, name " + "FROM department      ";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlfindAllDepartments);
+		while (results.next()) {
+			Department theDepartment = mapRowToDepartment(results);
+			departments.add(theDepartment);
+		}
+		return departments;
 	}
 
-	@Override
+	@Override // refactor later
 	public List<Department> searchDepartmentsByName(String nameSearch) {
-		return new ArrayList<>();
+		ArrayList<Department> departments = new ArrayList<>();
+		String sqlFindDepartmentByName = "SELECT department_id, name " + "FROM department " + "WHERE name ILIKE ?";
+		nameSearch = "%" + nameSearch + "%";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlFindDepartmentByName, nameSearch);
+		while (results.next()) {
+			Department theDepartment = mapRowToDepartment(results);
+			departments.add(theDepartment);
+		}
+		return departments;
 	}
 
 	@Override
 	public void updateDepartmentName(Long departmentId, String departmentName) {
-		
+		// Department theDepartment = new Department(); //creating a new object
+		// necessary?
+		String updateDepartment = "UPDATE department set name =? where department_id=?";
+		jdbcTemplate.update(updateDepartment, departmentName, departmentId);
 	}
 
 	@Override
 	public Department createDepartment(String departmentName) {
-		return null;
+		// Department theDepartment = new Department();
+		String sqlInsertDepartment = "INSERT INTO department(name) " + "VALUES(?)";
+		jdbcTemplate.update(sqlInsertDepartment, departmentName);
+	
+		return getDepartmentById(new Long(jdbcTemplate.queryForObject(sqlInsertDepartment,Integer.class)));
 	}
 
-	@Override
+	@Override //come back to this method
 	public Department getDepartmentById(Long id) {
-		return null;
+		String getDepartmentQuery = "SELECT department_id, name " + "FROM department " + "WHERE department_id = ?";
+		SqlRowSet results = jdbcTemplate.queryForRowSet(getDepartmentQuery, id);
+		
+		
+		return mapRowToDepartment(results);
+	}
+
+	private Department mapRowToDepartment(SqlRowSet results) {
+		Department theDepartment;
+		theDepartment = new Department();
+		theDepartment.setId(results.getLong("department_id"));
+		theDepartment.setName(results.getString("name"));
+		return theDepartment;
 	}
 
 }

@@ -54,10 +54,22 @@ public class JDBCEmployeeDAO implements EmployeeDAO {
 		}
 			return employees;				
 	}
-
+	
+	
+	//  test comment getEmployeesByProjectId has not been tested in console.
 	@Override
 	public List<Employee> getEmployeesByDepartmentId(long id) {
-		return new ArrayList<>();
+		ArrayList<Employee> employees = new ArrayList<>();
+		String sqlFindEmployeesOnThisProject =
+		"SELECT * FROM EMPLOYEE "+
+		"WHERE DEPARTMENT_ID = ?";
+				
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlFindEmployeesOnThisProject, id);
+		while(results.next()) {
+			Employee theEmployee = mapRowToEmployee(results);
+			employees.add(theEmployee);
+		}
+		return employees;
 	}
 
 	@Override
@@ -84,7 +96,7 @@ public class JDBCEmployeeDAO implements EmployeeDAO {
 		ArrayList<Employee> employees = new ArrayList<>();
 		String sqlFindEmployeesByProjects =
 		"SELECT * FROM PROJECT_EMPLOYEE AS PE "+
-		"JOIN EMPLOYEE AS  ON EMPLOYEE.EMPLOYEE_ID = PE.EMPLOYEE_ID "+
+		"JOIN EMPLOYEE ON EMPLOYEE.EMPLOYEE_ID = PE.EMPLOYEE_ID "+
 		"WHERE PE.PROJECT_ID = ?";
 		
 		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlFindEmployeesByProjects, projectId);
@@ -98,12 +110,17 @@ public class JDBCEmployeeDAO implements EmployeeDAO {
 	
 	
 	
-	//  test comment getEmployeesByProjectId has not been tested in console. db vis results are good.	
+	
 	@Override
 	public void changeEmployeeDepartment(Long employeeId, Long departmentId) {
 		String updateEmployeeDepartment = "UPDATE employee set department_id = ? where employee_id = ?";
 		jdbcTemplate.update(updateEmployeeDepartment, departmentId, employeeId);
 	}	
+	
+	
+	
+	
+	
 	
 	
 	private Employee mapRowToEmployee(SqlRowSet results) {

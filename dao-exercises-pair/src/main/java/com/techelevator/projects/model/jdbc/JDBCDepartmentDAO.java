@@ -49,26 +49,28 @@ public class JDBCDepartmentDAO implements DepartmentDAO {
 	public void updateDepartmentName(Long departmentId, String departmentName) {
 		// Department theDepartment = new Department(); //creating a new object
 		// necessary?
-		String updateDepartment = "UPDATE department set name =? where department_id=?";
+		String updateDepartment = "UPDATE department set name = ? where department_id= ?";
 		jdbcTemplate.update(updateDepartment, departmentName, departmentId);
 	}
 
 	@Override
 	public Department createDepartment(String departmentName) {
 		// Department theDepartment = new Department();
-		String sqlInsertDepartment = "INSERT INTO department(name) " + "VALUES(?)";
-		jdbcTemplate.update(sqlInsertDepartment, departmentName);
+		String sqlInsertDepartment = "INSERT INTO department (name) VALUES (?) RETURNING department_id";
 	
-		return getDepartmentById(new Long(jdbcTemplate.queryForObject(sqlInsertDepartment,Integer.class)));
+		return getDepartmentById(jdbcTemplate.queryForObject(sqlInsertDepartment,Long.class,departmentName));
 	}
 
-	@Override //come back to this method
+	@Override 
 	public Department getDepartmentById(Long id) {
-		String getDepartmentQuery = "SELECT department_id, name " + "FROM department " + "WHERE department_id = ?";
+		Department departmentIdObject = null;
+		String getDepartmentQuery = "SELECT department_id, name FROM department WHERE department_id = ?";
 		SqlRowSet results = jdbcTemplate.queryForRowSet(getDepartmentQuery, id);
 		
-		
-		return mapRowToDepartment(results);
+	    if (results.next()) {
+	        departmentIdObject = mapRowToDepartment(results);
+	    }
+	    return departmentIdObject;
 	}
 
 	private Department mapRowToDepartment(SqlRowSet results) {

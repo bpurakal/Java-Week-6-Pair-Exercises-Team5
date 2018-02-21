@@ -17,7 +17,7 @@ public class Employee {
 	public void setId(Long employeeId) {
 		this.employeeId = employeeId;
 	}
-	public long getDepartmentId() {
+	public Long getDepartmentId() {
 		return departmentId;
 	}
 	public void setDepartmentId(Long departmentId) {
